@@ -1,0 +1,6 @@
+// deno.jsonc
+{
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom"]
+  }
+}

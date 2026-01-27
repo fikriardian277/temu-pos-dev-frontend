@@ -1,0 +1,137 @@
+/* src/index.css (VERSI "NUKLIR" FINAL) */
+
+/* 1. ATURAN DASAR TAILWIND (Biarkan) */
+@layer base {
+  :root {
+    /* ... (semua variabel --background, --primary, dll) ... */
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --primary: 202 88% 49%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 47.4% 11.2%;
+    --radius: 0.5rem;
+    --chart-1: 202 88% 49%;
+    --chart-2: 142 70% 45%;
+    --chart-3: 48 96% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 244 91% 59%;
+  }
+
+  .dark {
+    /* ... (semua variabel .dark) ... */
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 202 88% 49%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 215 28% 17%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 28% 17%;
+    --input: 215 28% 17%;
+    --ring: 202 88% 49%;
+    --chart-1: 202 88% 49%;
+    --chart-2: 142 70% 45%;
+    --chart-3: 48 96% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 244 91% 59%;
+  }
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed #ccc;
+  padding: 1px 0;
+  align-items: center;
+}
+.item-name {
+  flex-grow: 1;
+  padding-right: 4px;
+  word-break: break-word;
+}
+.item-qty {
+  width: 30px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.item-price {
+  width: 55px;
+  text-align: right;
+  flex-shrink: 0;
+  padding-left: 4px;
+}
+.total-row {
+  display: flex;
+  justify-content: space-between;
+}
+.signature-box {
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  font-size: 9px;
+}
+.signature-col {
+  width: 45%;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@media print {
+  /* 1. Sembunyikan SEMUA elemen body dulu */
+  body * {
+    visibility: hidden;
+  }
+
+  /* 2. Tampilkan HANYA elemen dengan class 'print-content' */
+  .print-content,
+  .print-content * {
+    visibility: visible;
+  }
+
+  /* 3. Posisikan konten print di pojok kiri atas */
+  .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* 4. Utility buat sembunyiin tombol saat print */
+  .no-print {
+    display: none !important;
+  }
+}
