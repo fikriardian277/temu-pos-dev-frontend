@@ -15,7 +15,7 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   Dialog,
   DialogContent,
@@ -23,8 +23,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input"; // Pastikan punya komponen ini
-import { Label } from "@/components/ui/label"; // Pastikan punya komponen ini
+import { Input } from "@/components/ui/Input"; // Pastikan punya komponen ini
+import { Label } from "@/components/ui/Label"; // Pastikan punya komponen ini
 import {
   Select,
   SelectContent,
@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/Textarea";
 
 // Format Currency IDR
 const formatCurrency = (value) => {
@@ -57,10 +57,10 @@ export default function GeneralLedgerPage() {
   const [startDate, setStartDate] = useState(
     new Date(new Date().setDate(new Date().getDate() - 30))
       .toISOString()
-      .split("T")[0]
+      .split("T")[0],
   );
   const [endDate, setEndDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -186,11 +186,11 @@ export default function GeneralLedgerPage() {
   // Hitung Total
   const totalDebit = newJournal.items.reduce(
     (sum, item) => sum + parseFloat(item.debit || 0),
-    0
+    0,
   );
   const totalCredit = newJournal.items.reduce(
     (sum, item) => sum + parseFloat(item.credit || 0),
-    0
+    0,
   );
   const isBalanced = totalDebit > 0 && totalDebit === totalCredit;
 
@@ -274,7 +274,7 @@ export default function GeneralLedgerPage() {
   const filteredEntries = entries.filter(
     (e) =>
       e.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      e.reference_id?.toLowerCase().includes(searchTerm.toLowerCase())
+      e.reference_id?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -422,8 +422,8 @@ export default function GeneralLedgerPage() {
                           entry.status === "posted"
                             ? "bg-green-50 text-green-700 border-green-200"
                             : entry.status === "draft"
-                            ? "bg-yellow-50 text-yellow-700 border-yellow-200"
-                            : "bg-red-50 text-red-700 border-red-200"
+                              ? "bg-yellow-50 text-yellow-700 border-yellow-200"
+                              : "bg-red-50 text-red-700 border-red-200"
                         }`}
                       >
                         {entry.status}
@@ -532,12 +532,12 @@ export default function GeneralLedgerPage() {
                       </td>
                       <td className="px-4 py-3 text-right text-green-700">
                         {formatCurrency(
-                          entryItems.reduce((sum, i) => sum + i.debit, 0)
+                          entryItems.reduce((sum, i) => sum + i.debit, 0),
                         )}
                       </td>
                       <td className="px-4 py-3 text-right text-red-700">
                         {formatCurrency(
-                          entryItems.reduce((sum, i) => sum + i.credit, 0)
+                          entryItems.reduce((sum, i) => sum + i.credit, 0),
                         )}
                       </td>
                     </tr>
@@ -644,7 +644,7 @@ export default function GeneralLedgerPage() {
                           updateItem(
                             idx,
                             "debit",
-                            parseFloat(e.target.value) || 0
+                            parseFloat(e.target.value) || 0,
                           )
                         }
                       />
@@ -659,7 +659,7 @@ export default function GeneralLedgerPage() {
                           updateItem(
                             idx,
                             "credit",
-                            parseFloat(e.target.value) || 0
+                            parseFloat(e.target.value) || 0,
                           )
                         }
                       />
