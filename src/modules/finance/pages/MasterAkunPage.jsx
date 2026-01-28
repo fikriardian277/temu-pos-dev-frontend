@@ -13,11 +13,16 @@ import {
 } from "lucide-react";
 
 // UI COMPONENTS
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/Button.jsx";
+import { Card, CardContent } from "@/components/ui/Card.jsx";
+import { Badge } from "@/components/ui/Badge.jsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/Tabs.jsx";
+import { Skeleton } from "@/components/ui/skeleton.jsx";
 
 // CUSTOM COMPONENTS
 // Pastikan path ini sesuai dengan lokasi file AccountForm.jsx kamu
