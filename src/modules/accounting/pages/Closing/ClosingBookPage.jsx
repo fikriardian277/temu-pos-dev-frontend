@@ -24,7 +24,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/Select";
 import { Label } from "@/components/ui/label";
 
 const formatRupiah = (val) => "Rp " + Number(val || 0).toLocaleString("id-ID");

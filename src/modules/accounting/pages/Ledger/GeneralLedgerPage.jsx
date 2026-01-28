@@ -31,7 +31,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 
 // Format Currency IDR
