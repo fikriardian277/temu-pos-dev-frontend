@@ -22,7 +22,7 @@ import {
   SelectGroup,
   SelectLabel,
 } from "@/components/ui/Select"; // <-- Update import Select
-import { Switch } from "@/components/ui/Switch";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -88,7 +88,7 @@ export default function PromoSettingsTab() {
                         name, 
                         packages (id, name, price, unit)
                     )
-                `
+                `,
         )
         .eq("business_id", authState.business_id)
         .order("urutan", { ascending: true });
@@ -324,7 +324,7 @@ export default function PromoSettingsTab() {
                               <span className="mx-2 text-slate-300">/</span>
                               {pkg.name}
                             </SelectItem>
-                          ))
+                          )),
                         )}
                       </SelectGroup>
                     ))}
@@ -420,7 +420,7 @@ export default function PromoSettingsTab() {
                       {p.discount_type === "percent"
                         ? `${p.discount_value}%`
                         : `Rp ${Number(p.discount_value).toLocaleString(
-                            "id-ID"
+                            "id-ID",
                           )}`}
                     </Badge>
                   </TableCell>

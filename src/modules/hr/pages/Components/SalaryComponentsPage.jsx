@@ -32,7 +32,7 @@ import {
   DialogDescription,
 } from "@/components/ui/Dialog";
 import { Badge } from "@/components/ui/Badge";
-import { Switch } from "@/components/ui/Switch";
+import { Switch } from "@/components/ui/switch";
 
 export default function SalaryComponentsPage() {
   const { authState } = useAuth();
@@ -112,7 +112,7 @@ export default function SalaryComponentsPage() {
   const handleDelete = async (id) => {
     if (
       !window.confirm(
-        "Hapus komponen ini? Setting gaji karyawan yg pake komponen ini akan hilang."
+        "Hapus komponen ini? Setting gaji karyawan yg pake komponen ini akan hilang.",
       )
     )
       return;
