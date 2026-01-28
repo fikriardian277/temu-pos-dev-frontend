@@ -11,7 +11,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "";
+import { Label } from "@/components/ui/Label";
 import {
   Select,
   SelectContent,
