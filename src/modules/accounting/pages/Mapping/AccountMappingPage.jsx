@@ -13,7 +13,7 @@ import {
   Building,
   Zap,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
@@ -112,8 +112,8 @@ export default function AccountMappingPage() {
   const handleAccountChange = (rowId, newAccountId) => {
     setMappingRows((prev) =>
       prev.map((row) =>
-        row.id === rowId ? { ...row, account_id: parseInt(newAccountId) } : row
-      )
+        row.id === rowId ? { ...row, account_id: parseInt(newAccountId) } : row,
+      ),
     );
   };
 
@@ -191,10 +191,10 @@ export default function AccountMappingPage() {
                         c.type === "asset"
                           ? "bg-blue-100 text-blue-700"
                           : c.type === "expense"
-                          ? "bg-orange-100 text-orange-700"
-                          : c.type === "revenue"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-700"
+                            ? "bg-orange-100 text-orange-700"
+                            : c.type === "revenue"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-700"
                       }`}
                     >
                       {c.code}
