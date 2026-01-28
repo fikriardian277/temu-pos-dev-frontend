@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input"; // Pastikan punya komponen ini
 import { Label } from "@/components/ui/Label"; // Pastikan punya komponen ini
 import {
