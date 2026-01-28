@@ -4,7 +4,6 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Loader2, Search, ArrowUpRight, Wallet } from "lucide-react";
 
-import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import {
@@ -262,7 +261,7 @@ export default function SupplierPayablePage() {
                             </td>
                             <td className="p-4">
                               {new Date(item.due_date).toLocaleDateString(
-                                "id-ID"
+                                "id-ID",
                               )}
                             </td>
                             <td className="p-4 text-right">
@@ -332,7 +331,7 @@ export default function SupplierPayablePage() {
                         .filter((p) =>
                           p.purchase_number
                             .toLowerCase()
-                            .includes(searchQuery.toLowerCase())
+                            .includes(searchQuery.toLowerCase()),
                         )
                         .map((po) => (
                           <tr key={po.id} className="hover:bg-orange-50/50">
