@@ -44,22 +44,30 @@ export default function HotelInvoiceTemplate({
   const company = settings || {};
   const branch = branchInfo || {};
 
-  // LOGIC HEADER
+  // --- PERUBAHAN DI SINI ---
+  // Kita prioritasin 'company' dulu baru fallback ke text default.
+  // 'branch' kita hapus dari logika header biar gak nyampur.
   const headerInfo = {
-    name: branch.name || company.business_name || "LAUNDRY NAME",
-    address: branch.address || company.address || "Address not set",
-    phone: branch.phone_number || company.phone || "-",
+    // 1. NAMA: Ambil dari PUSAT (Table Businesses)
+    name: company.business_name || branch.name || "LAUNDRY NAME",
+
+    // 2. ALAMAT & KONTAK: Ambil dari CABANG (Table Branches)
+    // Fallback: Kalau cabang kosong (null), baru ambil dari pusat
+    address: branch.address || company.business_address || "Address not set",
+    phone: branch.phone_number || company.business_phone || "-",
     email: branch.email || company.email || "-",
-    website: branch.website || "-",
+    website: branch.website || company.website || "-",
   };
 
   // LOGIC PEMBAYARAN
+  // (Biasanya pembayaran juga ke Rekening Pusat, jadi gw set ke company juga prioritasnya)
+  // Kalau lu mau pembayaran tetep ikut cabang, balikin aja urutannya.
   const paymentInfo = {
-    bankName: branch.bank_name || company.bank_name || "NOT SET",
+    bankName: company.bank_name || branch.bank_name || "NOT SET",
     accountNumber:
-      branch.bank_account_number || company.bank_account_number || "-",
+      company.bank_account_number || branch.bank_account_number || "-",
     accountHolder:
-      branch.bank_account_holder || company.bank_account_holder || "-",
+      company.bank_account_holder || branch.bank_account_holder || "-",
   };
 
   // LOGIC AGGREGASI
@@ -75,7 +83,6 @@ export default function HotelInvoiceTemplate({
           const pkgUnit = item.packages?.unit || "Pcs";
 
           // --- UPDATE LOGIC HARGA ---
-          // Coba ambil dari packages.price, kalau 0/null hitung dari total_price / qty
           let pkgPrice = item.packages?.price || 0;
           if (pkgPrice === 0 && item.qty > 0) {
             pkgPrice = item.total_price / item.qty;
@@ -131,22 +138,55 @@ export default function HotelInvoiceTemplate({
           {/* HEADER */}
           <div className="flex justify-between items-start mb-10 border-b-2 border-brand pb-6">
             <div className="w-1/2">
-              <h1 className="text-3xl font-extrabold uppercase text-brand tracking-tight">
+              {/* 1. NAMA COMPANY: Turunin dari 3xl ke 2xl biar gak overpower */}
+              <h1 className="text-2xl font-extrabold uppercase text-brand tracking-tight leading-tight">
                 {headerInfo.name}
               </h1>
-              <div className="mt-3 text-slate-500 text-[11px] space-y-1">
-                <p className="max-w-[300px] leading-snug">
+
+              {/* --- BAGIAN DETAIL (ALAMAT & KONTAK) --- */}
+              {/* Naikkan base size jadi text-xs (12px) biar lebih kebaca & imbang */}
+              <div className="mt-4 text-slate-600 text-xs font-medium">
+                {/* 1. ALAMAT */}
+                {/* max-w dibesarin dikit biar gak terlalu cepat turun baris */}
+                <p className="max-w-[340px] leading-relaxed mb-4 text-slate-500">
                   {headerInfo.address}
                 </p>
-                <p>
-                  <span className="font-semibold text-slate-700">P:</span>{" "}
-                  {headerInfo.phone} &nbsp;|&nbsp;
-                  <span className="font-semibold text-slate-700"> E:</span>{" "}
-                  {headerInfo.email}
-                </p>
-                {headerInfo.website !== "-" && (
-                  <p className="text-brand font-medium">{headerInfo.website}</p>
-                )}
+
+                {/* 2. KONTAK (Grid Layout biar label & titik dua lurus rapi) */}
+                <div className="flex flex-col gap-2">
+                  {/* PHONE */}
+                  <div className="flex items-center">
+                    <span className="w-16 font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                      Phone
+                    </span>
+                    <span className="mr-2 text-slate-400">:</span>
+                    <span className="font-mono text-slate-700 font-semibold tracking-wide">
+                      {headerInfo.phone}
+                    </span>
+                  </div>
+
+                  {/* EMAIL */}
+                  <div className="flex items-center">
+                    <span className="w-16 font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                      Email
+                    </span>
+                    <span className="mr-2 text-slate-400">:</span>
+                    <span className="text-slate-700">{headerInfo.email}</span>
+                  </div>
+
+                  {/* WEBSITE */}
+                  {headerInfo.website !== "-" && (
+                    <div className="flex items-center">
+                      <span className="w-16 font-bold text-slate-800 uppercase tracking-wider text-[11px]">
+                        Web
+                      </span>
+                      <span className="mr-2 text-slate-400">:</span>
+                      <span className="text-brand underline decoration-brand/30 underline-offset-2">
+                        {headerInfo.website}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -171,9 +211,6 @@ export default function HotelInvoiceTemplate({
                   </p>
                   <p className="text-slate-600 max-w-[280px] leading-relaxed">
                     {customers?.address || "-"}
-                  </p>
-                  <p className="text-slate-500 mt-1 font-mono text-[11px]">
-                    {customers?.phone_number || "-"}
                   </p>
                 </div>
               </div>

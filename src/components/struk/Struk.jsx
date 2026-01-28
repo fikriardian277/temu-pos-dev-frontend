@@ -113,7 +113,9 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
                 )}
               </>
             ) : (
-              safePengaturan.show_header_on_receipt && (
+              // PERBAIKAN DI SINI: Tambahkan ( || isDeliveryNote )
+              // Agar header default tetap muncul di Surat Jalan meskipun show_header_on_receipt false
+              (safePengaturan.show_header_on_receipt || isDeliveryNote) && (
                 <>
                   <h1 className="font-bold text-[12px] uppercase">
                     {safePengaturan.business_name || "Nama Usaha"}
@@ -241,7 +243,7 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
                   Rp
                   {formatRupiah(
                     (Number(transaksi.service_fee) || 0) +
-                      (Number(transaksi.membership_fee_paid) || 0)
+                      (Number(transaksi.membership_fee_paid) || 0),
                   )}
                 </span>
               </div>

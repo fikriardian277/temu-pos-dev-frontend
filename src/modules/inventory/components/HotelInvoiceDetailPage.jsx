@@ -64,7 +64,9 @@ export default function HotelInvoiceDetailPage() {
 
         // LOGIC CARI DATA CABANG (BRANCH)
         let branchData = null;
-        const targetBranchId = invoiceData.hotel_delivery_notes?.[0]?.branch_id;
+        const targetBranchId =
+          invoiceData.branch_id ||
+          invoiceData.hotel_delivery_notes?.[0]?.branch_id;
 
         if (targetBranchId) {
           const { data: bData, error: bError } = await supabase

@@ -130,7 +130,7 @@ function HotelLaundryPage() {
       setLoadingPackages(true);
       try {
         const selectedCustomer = hotelCustomers.find(
-          (c) => String(c.id) === selectedHotelId
+          (c) => String(c.id) === selectedHotelId,
         );
         if (!selectedCustomer?.default_service_id) {
           toast.warning("Hotel ini belum di-setting layanannya.");
@@ -193,7 +193,7 @@ function HotelLaundryPage() {
 
       if (!finalBranchId) {
         const selectedHotel = hotelCustomers.find(
-          (h) => String(h.id) === selectedHotelId
+          (h) => String(h.id) === selectedHotelId,
         );
         // Kita perlu fetch ulang detail customer kalau di list awal kolom branch_id belum ada
         // Tapi biar cepet, kita asumsi di fetchHotelCustomers tadi kita tambah select branch_id
@@ -227,7 +227,7 @@ function HotelLaundryPage() {
           p_delivery_date: deliveryDate,
           p_notes: notes,
           p_items: itemsToSubmit,
-        }
+        },
       );
 
       if (error) throw error;
@@ -262,7 +262,7 @@ function HotelLaundryPage() {
           `
             id, pickup_date, status, invoice_code, notes, created_at,
             customers(name)
-        `
+        `,
         )
         .eq("business_id", authState.business_id)
         .order("created_at", { ascending: false })
@@ -333,12 +333,13 @@ function HotelLaundryPage() {
           `
             *, 
             customers(name, address, phone_number, id_identitas_bisnis), 
+            branches(name, address, phone_number), 
             hotel_delivery_items(
                 qty, 
                 package_id,
                 packages!fk_fix_final(name, unit) 
             )
-        `
+        `,
         )
         // ^^^ LIHAT DI ATAS: Ada tanda seru (!) + nama constraint (fk_fix_final)
         // Ini perintah MUTLAK buat Supabase.
@@ -358,19 +359,17 @@ function HotelLaundryPage() {
 
       // ... (Mapping data ke struk lanjutin di bawah) ...
       const mappedForStruk = {
-        // ... kodingan mapping lama ...
-        invoice_code: noteData.invoice_code || `SJ-${noteData.id}`, // Pastikan ini aman
+        invoice_code: noteData.invoice_code || `SJ-${noteData.id}`,
         created_at: noteData.delivery_date,
         pickup_date: noteData.pickup_date,
         grand_total: 0,
         customers: noteData.customers,
-        // Cek items ada atau nggak
+        branches: noteData.branches, // ✅ TAMBAHKAN BARIS INI BRE!
         order_items: noteData.hotel_delivery_items
           ? noteData.hotel_delivery_items.map((item) => ({
               quantity: item.qty,
               price_per_qty: 0,
               total_price: 0,
-              // Handle kalo packages null (misal relasi putus)
               packages: item.packages || { name: "Item Terhapus", unit: "pcs" },
             }))
           : [],
@@ -391,7 +390,7 @@ function HotelLaundryPage() {
         detailTransaksiSukses: createdNoteDetails,
         authStatePengaturan: authState.pengaturan,
         mode: "surat_jalan",
-      })
+      }),
     );
     window.open("/print-struk", "_blank");
   };
@@ -646,13 +645,13 @@ function HotelLaundryPage() {
                           <td className="p-3">
                             <div className="font-bold">
                               {new Date(item.pickup_date).toLocaleDateString(
-                                "id-ID"
+                                "id-ID",
                               )}
                             </div>
                             <div className="text-[10px] text-slate-400">
                               Created:{" "}
                               {new Date(item.created_at).toLocaleDateString(
-                                "id-ID"
+                                "id-ID",
                               )}
                             </div>
                           </td>
