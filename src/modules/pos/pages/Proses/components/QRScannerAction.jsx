@@ -61,7 +61,7 @@ const QRScannerAction = ({ onScanResult }) => {
                   html5QrCode.clear();
                   setIsOpen(false);
                   if (onScanResultRef.current) {
-                    onScanResultRef.current(decodedText);
+                    onScanResultRef.current(decodedText.trim()); // <-- Tambahin .trim() biar spasi gaib ilang
                   }
                 })
                 .catch((err) => console.log("Stop failed", err));
