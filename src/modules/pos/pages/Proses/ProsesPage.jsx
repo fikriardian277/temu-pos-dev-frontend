@@ -121,7 +121,7 @@ function ProsesPage() {
       if (error) throw error;
       toast.success("🚀 Proses Cuci Dimulai!");
       setTransaksi((prev) =>
-        prev.map((t) => (t.id === txId ? { ...t, ...updateData } : t))
+        prev.map((t) => (t.id === txId ? { ...t, ...updateData } : t)),
       );
     } catch (e) {
       toast.error("Gagal update: " + e.message);
@@ -178,7 +178,7 @@ function ProsesPage() {
               }
               return t;
             })
-            .filter((t) => t.process_status !== "Selesai") // Filter kalo mau diilangin dari list
+            .filter((t) => t.process_status !== "Selesai"), // Filter kalo mau diilangin dari list
       );
     } catch (error) {
       console.error(error);
@@ -204,7 +204,7 @@ function ProsesPage() {
     const results = transaksi.filter(
       (t) =>
         t.invoice_code.toLowerCase().includes(lowerKey) ||
-        t.customers?.name?.toLowerCase().includes(lowerKey)
+        t.customers?.name?.toLowerCase().includes(lowerKey),
     );
     setSearchResults(results);
   };
@@ -239,7 +239,7 @@ function ProsesPage() {
               services (name) 
             ) 
           )
-        `
+        `,
         )
         .eq("id", txPartial.id)
         .single();
@@ -272,7 +272,7 @@ function ProsesPage() {
 
         default:
           toast.warning(
-            `Status ${tx.process_status} tidak punya aksi otomatis.`
+            `Status ${tx.process_status} tidak punya aksi otomatis.`,
           );
       }
     } catch (err) {
@@ -392,7 +392,7 @@ function ProsesPage() {
                       </div>
                       <Badge
                         className={`${getStatusColor(
-                          tx.process_status
+                          tx.process_status,
                         )} border-0 group-hover:bg-white`}
                       >
                         {tx.process_status}
