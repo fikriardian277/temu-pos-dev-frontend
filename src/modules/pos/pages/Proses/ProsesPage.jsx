@@ -501,10 +501,13 @@ function ProsesPage() {
             <Button
               className="flex-1 bg-green-600 hover:bg-green-700"
               onClick={() => {
+                // 👇 FIX NYA DI SINI BRE 👇
                 if (confirmActionType === "complete") {
-                  finalizeOrder(currentTx.id);
+                  // KARENA UDAH LUNAS: Langsung update status prosesnya aja jadi Selesai.
+                  // JANGAN panggil finalizeOrder() biar gak nabrak RPC pembayaran.
+                  handleUpdateStatus(currentTx.id, "Selesai");
                 } else {
-                  // Untuk kasus lain jika ada
+                  // Untuk kasus lain (misalnya konfirmasi Siap Diambil)
                   handleUpdateStatus(currentTx.id, "Selesai");
                 }
               }}
