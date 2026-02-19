@@ -144,42 +144,36 @@ function ProsesPage() {
   };
 
   const finalizeOrder = async (txId, paymentData = {}) => {
-    // Siapkan loading state kalau perlu
     const toastId = toast.loading("Memproses pelunasan...");
 
     try {
-      // 1. Tentukan Metode Bayar (Default Cash kalo kosong)
+      // 1. Tentukan Metode Bayar
       const method = paymentData.payment_method || "Cash";
 
-      // 2. PANGGIL RPC BACKEND (Jangan direct update table!)
-      const { error } = await supabase.rpc("settle_order_payment", {
-        p_order_id: txId,
-        p_payment_method: method,
-        p_user_id: authState.user.id,
-      });
-
-      if (error) throw error;
-
-      // 3. Update Status di Frontend (Biar gak perlu refresh page)
-      toast.success("🎉 Order Lunas & Tercatat di Pembukuan!");
-
-      // Update state lokal biar UI langsung berubah
-      setTransaksi(
-        (prev) =>
-          prev
-            .map((t) => {
-              if (t.id === txId) {
-                return {
-                  ...t,
-                  process_status: "Selesai",
-                  payment_status: "Lunas",
-                  payment_method: method,
-                };
-              }
-              return t;
-            })
-            .filter((t) => t.process_status !== "Selesai"), // Filter kalo mau diilangin dari list
+      // 2. PANGGIL RPC BACKEND BUAT LUNASIN DUITNYA
+      const { error: paymentError } = await supabase.rpc(
+        "settle_order_payment",
+        {
+          p_order_id: txId,
+          p_payment_method: method,
+          p_user_id: authState.user.id,
+        },
       );
+
+      if (paymentError) throw paymentError;
+
+      // 3. [TAMBAHAN BARU] OTOMATIS UBAH STATUS PROSES JADI "SELESAI" DI DATABASE
+      const { error: statusError } = await supabase
+        .from("orders")
+        .update({ process_status: "Selesai" })
+        .eq("id", txId);
+
+      if (statusError) throw statusError;
+
+      toast.success("🎉 Order Lunas & Selesai Diambil!");
+
+      // 4. Hapus order dari daftar transaksi aktif di layar (karena udah beres)
+      setTransaksi((prev) => prev.filter((t) => t.id !== txId));
     } catch (error) {
       console.error(error);
       toast.error("Gagal pelunasan: " + error.message);
