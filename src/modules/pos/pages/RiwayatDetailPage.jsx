@@ -79,7 +79,7 @@ export default function RiwayatDetailPage() {
           customers!inner(id, name, tipe_pelanggan, id_identitas_bisnis, phone_number), 
           branches(id, name, address, phone_number), 
           order_items(*, packages(*, services(name))),
-          order_status_logs(id, status, created_at, created_by) 
+          order_status_logs(id, status, created_at, created_by, profiles(full_name)) 
         `,
         ) // <-- BARIS TERAKHIR (order_status_logs) ITU YANG BARU BRE!
         .eq("invoice_code", kode_invoice)
@@ -485,11 +485,11 @@ export default function RiwayatDetailPage() {
 
                             {/* Catatan: Karena kita belum join tabel 'profiles/users', 
                                 kita tampilin teks default dulu atau ID Kasirnya */}
-                            <span className="text-[10px] text-slate-400 mt-0.5">
+                            <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
                               Diupdate oleh:{" "}
-                              {log.created_by === authState.user.id
-                                ? "Anda"
-                                : "Sistem/Kasir"}
+                              {log.profiles?.full_name
+                                ? log.profiles.full_name
+                                : "Sistem"}
                             </span>
                           </div>
                         </div>
