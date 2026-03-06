@@ -108,6 +108,8 @@ function PelangganManagementPage() {
   const [loading, setLoading] = useState(true);
   const [loadingCSV, setLoadingCSV] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const LIMIT = 20;
   const [cabangs, setCabangs] = useState([]);
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -210,9 +212,10 @@ function PelangganManagementPage() {
         );
       }
 
-      const { data, error } = await query.order("created_at", {
-        ascending: false,
-      });
+      const { data, error } = await query
+        .order("created_at", { ascending: false })
+        .range((page - 1) * LIMIT, page * LIMIT - 1);
+
       if (error) throw error;
 
       // PERUBAHAN #3: Hapus "penerjemah", gunakan data apa adanya
@@ -222,7 +225,13 @@ function PelangganManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, authState.business_id, authState.role, authState.branch_id]);
+  }, [
+    searchTerm,
+    authState.business_id,
+    authState.role,
+    authState.branch_id,
+    page,
+  ]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -583,7 +592,10 @@ function PelangganManagementPage() {
             type="text"
             placeholder="Cari nama atau nomor HP..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1); // <-- TAMBAHIN INI BIAR RESET KE HALAMAN 1
+            }}
             className="mt-4"
           />
         </CardHeader>
@@ -697,6 +709,23 @@ function PelangganManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      <div className="flex justify-center gap-2 mt-4 mb-8">
+        <Button
+          variant="outline"
+          disabled={page === 1 || loading}
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
+          Sebelumnya
+        </Button>
+        <Button
+          variant="outline"
+          disabled={pelanggans.length < LIMIT || loading}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Selanjutnya
+        </Button>
+      </div>
 
       {/* MODAL TAMBAH BARU */}
       <Dialog open={isNewModalOpen} onOpenChange={setIsNewModalOpen}>

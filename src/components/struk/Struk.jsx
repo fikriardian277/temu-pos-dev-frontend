@@ -12,7 +12,6 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
 
   // --- 2. FETCH IDENTITAS (Header Struk) ---
   useEffect(() => {
-    // ... logic fetch identitas (sama seperti sebelumnya) ...
     console.log("DEBUG Struk - Menerima Transaksi:", transaksi);
     setIdentityData(null);
     setLoadingIdentity(false);
@@ -113,8 +112,6 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
                 )}
               </>
             ) : (
-              // PERBAIKAN DI SINI: Tambahkan ( || isDeliveryNote )
-              // Agar header default tetap muncul di Surat Jalan meskipun show_header_on_receipt false
               (safePengaturan.show_header_on_receipt || isDeliveryNote) && (
                 <>
                   <h1 className="font-bold text-[12px] uppercase">
@@ -249,14 +246,13 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
               </div>
             )}
 
-            {/* 👇 DISKON (UPDATE BARU) 👇 */}
+            {/* Diskon */}
             {Number(transaksi.discount_amount) > 0 && (
               <div className="total-row">
                 <span>Diskon</span>
                 <span>(Rp{formatRupiah(transaksi.discount_amount)})</span>
               </div>
             )}
-            {/* 👆 SELESAI UPDATE DISKON 👆 */}
 
             {/* Grand Total */}
             <div className="total-row font-bold text-[11px] mt-1 pt-1 border-t border-dashed border-black">
@@ -278,6 +274,28 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
         </div>
       )}
 
+      {/* ======================================= */}
+      {/* 1. SYARAT & KETENTUAN (Khusus Thermal 58mm) */}
+      {/* ======================================= */}
+      {!isDeliveryNote && (
+        <div className="mt-3 pt-2 border-t border-black border-dashed">
+          <p className="text-[10px] font-bold text-center mb-1">
+            SYARAT & KETENTUAN:
+          </p>
+          <ol className="text-[9px] leading-tight text-left pl-3 pr-1 space-y-0.5 list-decimal font-medium">
+            <li>Periksa saku. Brg tertinggal/hilang bkn tgg jwb kami.</li>
+            <li>Komplain maks 3x24 jam sjk diambil (wajib nota & tag utuh).</li>
+            <li>Rusak krn sifat bahan (luntur/susut) di luar tgg jwb kami.</li>
+            <li>Cucian tdk diambil {">"} 3 bln, resiko ditanggung konsumen.</li>
+            <li>
+              Ganti rugi kelalaian kami maks 10x tarif cuci brg terkait (khsus
+              kiloan).
+            </li>
+          </ol>
+        </div>
+      )}
+      {/* ======================================= */}
+
       {isDeliveryNote && (
         <div className="mt-6 flex justify-between text-center text-[9px]">
           <div>
@@ -297,19 +315,19 @@ const Struk = React.forwardRef(({ transaksi, pengaturan }, ref) => {
 
       {/* 2. Footer Teks "Terima Kasih" (KHUSUS REGULER) */}
       {!isDeliveryNote && (
-        <p className="mt-4 text-[9px] italic text-center border-b border-dashed border-black/30 pb-2 mb-2">
+        <p className="mt-3 pt-2 text-[9px] italic text-center border-t border-dashed border-black">
           {identityData?.footer_struk ||
             safePengaturan.receipt_footer_text ||
             "Terima Kasih!"}
         </p>
       )}
 
-      {/* 3. QR CODE (PINDAH KE SINI - PALING BAWAH) */}
+      {/* 3. QR CODE (PALING BAWAH) */}
       {!isDeliveryNote && (
-        <div className="flex flex-col items-center justify-center pb-2">
+        <div className="flex flex-col items-center justify-center mt-2 pb-2">
           <QRCode
             value={transaksi.invoice_code}
-            size={70} // Ukuran sedikit diperkecil biar manis di footer
+            size={70}
             style={{ height: "auto", maxWidth: "100%", width: "70px" }}
             viewBox={`0 0 256 256`}
           />

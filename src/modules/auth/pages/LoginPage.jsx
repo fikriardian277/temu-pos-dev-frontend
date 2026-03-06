@@ -78,9 +78,7 @@ function LoginPage() {
             alt="App Logo"
             className="w-16 h-16 mx-auto mb-2"
           />
-          <CardTitle className="text-2xl font-bold">
-            Selamat Datang BABI
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Selamat Datang</CardTitle>
           <CardDescription>
             Masukkan username dan password Anda untuk masuk ke akun.
           </CardDescription>
