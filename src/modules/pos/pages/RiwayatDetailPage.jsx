@@ -78,9 +78,10 @@ export default function RiwayatDetailPage() {
           pickup_date, 
           customers!inner(id, name, tipe_pelanggan, id_identitas_bisnis, phone_number), 
           branches(id, name, address, phone_number), 
-          order_items(*, packages(*, services(name)))
-        `
-        )
+          order_items(*, packages(*, services(name))),
+          order_status_logs(id, status, created_at, created_by) 
+        `,
+        ) // <-- BARIS TERAKHIR (order_status_logs) ITU YANG BARU BRE!
         .eq("invoice_code", kode_invoice)
         .eq("business_id", authState.business_id);
 
@@ -189,7 +190,7 @@ export default function RiwayatDetailPage() {
         : nomorHPNormalized;
 
       const url = `https://api.whatsapp.com/send?phone=${nomorHPFormatted}&text=${encodeURIComponent(
-        pesan
+        pesan,
       )}`;
 
       window.open(url, "_blank");
@@ -419,6 +420,87 @@ export default function RiwayatDetailPage() {
                   ))}
                 </tbody>
               </table>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5 text-blue-600" /> Lacak Status
+                Cucian
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative border-l-2 border-slate-200 ml-3 mt-2 space-y-6 pb-4">
+                {transaksi.order_status_logs &&
+                transaksi.order_status_logs.length > 0 ? (
+                  // Kita urutkan dari yang paling lama ke yang terbaru
+                  [...transaksi.order_status_logs]
+                    .sort(
+                      (a, b) => new Date(a.created_at) - new Date(b.created_at),
+                    )
+                    .map((log, index, arr) => {
+                      // Bikin warna dot (titik) beda-beda tiap status
+                      let dotColor = "bg-slate-300";
+                      if (log.status === "Proses Cuci")
+                        dotColor = "bg-blue-500";
+                      if (log.status === "Siap Diambil")
+                        dotColor = "bg-yellow-500";
+                      if (log.status === "Selesai" || log.status === "Diambil")
+                        dotColor = "bg-green-500";
+
+                      // Bikin titik terakhir ada efek animasinya (ping)
+                      const isLast = index === arr.length - 1;
+
+                      return (
+                        <div key={log.id} className="relative pl-6">
+                          {/* Garis & Titik Timeline */}
+                          <div
+                            className={`absolute -left-[9px] top-1.5 h-4 w-4 rounded-full border-2 border-white ${dotColor} shadow-sm z-10`}
+                          ></div>
+                          {isLast && (
+                            <div
+                              className={`absolute -left-[9px] top-1.5 h-4 w-4 rounded-full ${dotColor} animate-ping opacity-40 z-0`}
+                            ></div>
+                          )}
+
+                          {/* Konten Timeline */}
+                          <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 text-sm">
+                              {log.status}
+                            </span>
+                            <span className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                              <History className="h-3 w-3" />
+                              {new Date(log.created_at).toLocaleString(
+                                "id-ID",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )}
+                            </span>
+
+                            {/* Catatan: Karena kita belum join tabel 'profiles/users', 
+                                kita tampilin teks default dulu atau ID Kasirnya */}
+                            <span className="text-[10px] text-slate-400 mt-0.5">
+                              Diupdate oleh:{" "}
+                              {log.created_by === authState.user.id
+                                ? "Anda"
+                                : "Sistem/Kasir"}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                ) : (
+                  <p className="text-sm text-slate-400 pl-4">
+                    Belum ada riwayat status tercatat.
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
