@@ -123,6 +123,7 @@ function CustomerSection({
         .from("customers")
         .select("*")
         .eq("business_id", authState.business_id)
+        .eq("branch_id", authState.branch_id)
         .eq("phone_number", phone_number)
         .maybeSingle(); // maybeSingle() gak error kalo datanya null
 
@@ -132,14 +133,14 @@ function CustomerSection({
         // --- PELANGGAN DITEMUKAN ---
         if (existingCustomer.status === "aktif") {
           toast.error(
-            "Nomor HP ini sudah terdaftar atas nama: " + existingCustomer.name
+            "Nomor HP ini sudah terdaftar atas nama: " + existingCustomer.name,
           );
           // Jangan tutup modal, biarkan kasir ganti nomor
         } else {
           // --- PELANGGAN NONAKTIF, TANYA UNTUK AKTIFKAN ---
           if (
             window.confirm(
-              `Nomor HP ini sudah ada (status: Nonaktif) atas nama: ${existingCustomer.name}.\n\nAktifkan & update datanya?`
+              `Nomor HP ini sudah ada (status: Nonaktif) atas nama: ${existingCustomer.name}.\n\nAktifkan & update datanya?`,
             )
           ) {
             // Kalo user klik "OK", kita UPDATE
@@ -158,7 +159,7 @@ function CustomerSection({
             if (updateError) throw updateError;
 
             toast.success(
-              `Pelanggan "${updatedCustomer.name}" berhasil diaktifkan kembali!`
+              `Pelanggan "${updatedCustomer.name}" berhasil diaktifkan kembali!`,
             );
             onSelectPelanggan(updatedCustomer); // Langsung pilih pelanggan ini
             setIsNewModalOpen(false); // Tutup modal

@@ -206,7 +206,7 @@ function PelangganManagementPage() {
 
       if (searchTerm) {
         query = query.or(
-          `name.ilike.%${searchTerm}%,phone_number.ilike.%${searchTerm}%`
+          `name.ilike.%${searchTerm}%,phone_number.ilike.%${searchTerm}%`,
         );
       }
 
@@ -266,7 +266,7 @@ function PelangganManagementPage() {
       if (error) throw error;
       if (!data || data.length === 0) {
         toast.info(
-          "Tidak ada data pelanggan untuk di-download pada filter ini."
+          "Tidak ada data pelanggan untuk di-download pada filter ini.",
         );
         return;
       }
@@ -354,6 +354,7 @@ function PelangganManagementPage() {
         .from("customers")
         .select("*")
         .eq("business_id", authState.business_id)
+        .eq("branch_id", targetBranchId)
         .eq("phone_number", data.phone_number)
         .maybeSingle(); // maybeSingle() gak error kalo datanya null
 
@@ -364,7 +365,7 @@ function PelangganManagementPage() {
         if (existingCustomer.status === "aktif") {
           // Kalo aktif, ya error
           toast.error(
-            "Nomor HP ini sudah terdaftar atas nama: " + existingCustomer.name
+            "Nomor HP ini sudah terdaftar atas nama: " + existingCustomer.name,
           );
           form.setError("phone_number", {
             message: "Nomor HP sudah terdaftar.",
@@ -374,7 +375,7 @@ function PelangganManagementPage() {
           // Kalo 'nonaktif', kita tanya!
           if (
             window.confirm(
-              `Nomor HP ini sudah ada (status: Nonaktif) atas nama: ${existingCustomer.name}.\n\nAktifkan & update datanya?`
+              `Nomor HP ini sudah ada (status: Nonaktif) atas nama: ${existingCustomer.name}.\n\nAktifkan & update datanya?`,
             )
           ) {
             // Kalo user klik "OK", kita UPDATE
@@ -404,7 +405,7 @@ function PelangganManagementPage() {
 
             if (updateError) throw updateError;
             toast.success(
-              `Pelanggan "${data.name}" berhasil diaktifkan kembali!`
+              `Pelanggan "${data.name}" berhasil diaktifkan kembali!`,
             );
           } else {
             // Kalo user klik "Cancel", gajadi ngapa-ngapain

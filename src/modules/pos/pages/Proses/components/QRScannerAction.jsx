@@ -7,68 +7,45 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-import { QrCode, Loader2, AlertCircle } from "lucide-react";
+import { QrCode, Loader2, AlertCircle, Image as ImageIcon } from "lucide-react"; // <-- Tambah icon Image
 
 const QRScannerAction = ({ onScanResult }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 1. KUNCI CALLBACK BIAR GAK BIKIN RESTART
   const onScanResultRef = useRef(onScanResult);
+  const html5QrCodeRef = useRef(null); // <-- Bikin ref untuk nyimpen "mesin" scanner
+  const fileInputRef = useRef(null); // <-- Bikin ref untuk input file
 
   useEffect(() => {
     onScanResultRef.current = onScanResult;
   }, [onScanResult]);
 
   useEffect(() => {
-    let html5QrCode;
-
     if (isOpen) {
       setErrorMsg("");
 
-      // Delay dikit biar aman
       const timer = setTimeout(() => {
-        if (html5QrCode?.isScanning) return;
+        if (html5QrCodeRef.current?.isScanning) return;
 
-        html5QrCode = new Html5Qrcode("reader");
+        // Simpan mesin ke dalam ref biar bisa dipanggil sama fungsi upload foto
+        html5QrCodeRef.current = new Html5Qrcode("reader");
 
         const config = {
-          // 1. TURUNIN FPS (SANGAT PENTING!)
-          // 10 itu terlalu berat buat HP kalau didiemin lama. 4-5 udah lebih dari cukup buat QR.
           fps: 4,
-
           qrbox: { width: 250, height: 250 },
-
-          // 2. HAPUS aspectRatio!
-          // Maksa rasio 1:1 bikin HP kerja 2x lipat buat nge-crop video real-time. Biarin natural.
-
-          // 3. MATIKAN FITUR FLIP
-          // Gak usah ngecek QR yang posisinya kebalik (kayak dari pantulan cermin), ini makan memori.
           disableFlip: true,
         };
 
-        html5QrCode
+        html5QrCodeRef.current
           .start(
             { facingMode: "environment" },
             config,
             (decodedText) => {
               console.log("QR Code Scanned:", decodedText);
-
-              // Stop dulu baru panggil callback
-              html5QrCode
-                .stop()
-                .then(() => {
-                  html5QrCode.clear();
-                  setIsOpen(false);
-                  if (onScanResultRef.current) {
-                    onScanResultRef.current(decodedText.trim()); // <-- Tambahin .trim() biar spasi gaib ilang
-                  }
-                })
-                .catch((err) => console.log("Stop failed", err));
+              handleSuksesScan(decodedText);
             },
-            (errorMessage) => {
-              // Biarin kosong biar gak spam console
-            },
+            (errorMessage) => {},
           )
           .catch((err) => {
             console.error("Gagal start kamera:", err);
@@ -78,15 +55,58 @@ const QRScannerAction = ({ onScanResult }) => {
 
       return () => {
         clearTimeout(timer);
-        if (html5QrCode && html5QrCode.isScanning) {
-          html5QrCode
+        if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+          html5QrCodeRef.current
             .stop()
-            .then(() => html5QrCode.clear())
+            .then(() => html5QrCodeRef.current.clear())
             .catch((err) => console.error("Cleanup error", err));
         }
       };
     }
   }, [isOpen]);
+
+  // --- FUNGSI HELPER: KETIKA SCAN SUKSES (DARI KAMERA ATAU FOTO) ---
+  const handleSuksesScan = (decodedText) => {
+    if (html5QrCodeRef.current && html5QrCodeRef.current.isScanning) {
+      html5QrCodeRef.current
+        .stop()
+        .then(() => {
+          html5QrCodeRef.current.clear();
+          setIsOpen(false);
+          if (onScanResultRef.current) {
+            onScanResultRef.current(decodedText.trim());
+          }
+        })
+        .catch((err) => console.log("Stop failed", err));
+    } else {
+      // Kalau kameranya lagi gak nyala (hasil dari upload foto)
+      html5QrCodeRef.current.clear();
+      setIsOpen(false);
+      if (onScanResultRef.current) {
+        onScanResultRef.current(decodedText.trim());
+      }
+    }
+  };
+
+  // --- FUNGSI BARU: HANDLE UPLOAD FOTO ---
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      setErrorMsg(""); // Bersihin error sebelumnya
+      // Panggil fitur .scanFile() dari mesin Html5Qrcode
+      const decodedText = await html5QrCodeRef.current.scanFile(file, true);
+      console.log("QR Code dari Galeri:", decodedText);
+      handleSuksesScan(decodedText);
+    } catch (err) {
+      console.error("Gagal scan file:", err);
+      setErrorMsg("QR Code tidak ditemukan pada gambar tersebut.");
+    } finally {
+      // Reset input file biar user bisa klik gambar yang sama lagi kalau error
+      event.target.value = "";
+    }
+  };
 
   return (
     <>
@@ -101,15 +121,12 @@ const QRScannerAction = ({ onScanResult }) => {
           </DialogHeader>
 
           <div className="flex flex-col items-center justify-center p-4 min-h-[320px]">
-            {/* WRAPPER BARU: Area kekuasaan React (Bisa tumpuk-tumpukan pake absolute) */}
             <div className="w-full h-[300px] bg-slate-100 rounded-lg overflow-hidden relative">
-              {/* 1. AREA KEKUASAAN SCANNER: Harus KOSONG MELOMPONG! */}
               <div
                 id="reader"
                 className="w-full h-full absolute inset-0 z-10"
               ></div>
 
-              {/* 2. AREA LOADING REACT: Ditaruh di LUAR div#reader, posisinya di belakang (z-0) */}
               {!errorMsg && (
                 <div className="absolute inset-0 flex items-center justify-center text-slate-400 z-0 pointer-events-none">
                   <Loader2 className="w-8 h-8 animate-spin" />
@@ -118,8 +135,8 @@ const QRScannerAction = ({ onScanResult }) => {
             </div>
 
             {errorMsg && (
-              <div className="mt-4 p-3 bg-red-50 text-red-600 text-sm rounded flex items-center gap-2 z-10 relative">
-                <AlertCircle className="w-4 h-4" />
+              <div className="mt-4 p-3 w-full bg-red-50 text-red-600 text-sm rounded flex items-center gap-2 z-10 relative">
+                <AlertCircle className="w-4 h-4 shrink-0" />
                 {errorMsg}
               </div>
             )}
@@ -129,6 +146,30 @@ const QRScannerAction = ({ onScanResult }) => {
                 Arahkan kamera ke QR Code di struk.
               </p>
             )}
+
+            {/* --- TOMBOL UPLOAD FOTO BARU --- */}
+            <div className="w-full mt-4 flex items-center gap-2">
+              <div className="h-px bg-slate-200 flex-1"></div>
+              <span className="text-xs text-slate-400">ATAU</span>
+              <div className="h-px bg-slate-200 flex-1"></div>
+            </div>
+
+            <Button
+              variant="secondary"
+              className="w-full mt-4"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <ImageIcon className="w-4 h-4 mr-2" /> Upload dari Galeri
+            </Button>
+
+            {/* Input file disembunyikan, cuma dipanggil lewat tombol di atas */}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+            />
           </div>
         </DialogContent>
       </Dialog>
