@@ -32,18 +32,9 @@ const QRScannerAction = ({ onScanResult }) => {
         html5QrCodeRef.current = new Html5Qrcode("reader");
 
         const config = {
-          fps: 10, // Gw naikin dikit biar scannya lebih cepet responsif (gak patah-patah)
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            // Ini rumus biar bentuknya SELALU KOTAK SEMPURNA (mengikuti lebar layar, tapi disisain margin)
-            const minEdgePercentage = 0.7; // 70% dari ukuran layar terkecil
-            const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-            const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-            return {
-              width: qrboxSize,
-              height: qrboxSize,
-            };
-          },
-          disableFlip: false, // Ubah jadi false biar kamera depan/belakang aman
+          fps: 10,
+          // 👇 qrbox KITA HAPUS TOTAL BIAR GAK ADA GARIS/SUDUT SAMA SEKALI
+          disableFlip: false,
         };
 
         html5QrCodeRef.current
