@@ -31,25 +31,14 @@ export default function RiwayatPage() {
   const LIMIT = 20; // Ambil 20 data per load
 
   // FETCH DATA LIST
+  // FETCH DATA LIST
   const fetchTransaksi = useCallback(async () => {
     setLoading(true);
     try {
+      // 👇 KITA TEMBAK LANGSUNG KE TABEL VIEW YANG BARU DIBIKIN 👇
       let query = supabase
-        .from("orders")
-        .select(
-          `
-          id,
-          invoice_code,
-          created_at,
-          grand_total,
-          payment_status,
-          process_status,
-          payment_method,
-          cancellation_status, 
-          customers!inner(name),
-          branches(name)
-        `,
-        )
+        .from("vw_orders_history")
+        .select("*")
         .eq("business_id", authState.business_id)
         .order("created_at", { ascending: false })
         .range((page - 1) * LIMIT, page * LIMIT - 1);
@@ -61,9 +50,10 @@ export default function RiwayatPage() {
 
       // Filter Pencarian (Invoice atau Nama Customer)
       if (searchTerm) {
-        // Pakai .or() untuk nyari di dua kolom berbeda sekaligus
+        // 👇 SEKARANG PAKE .or() LANGSUNG JALAN MULUS TANPA ERROR! 👇
+        // Pakai tanda kutip ganda ("%") biar aman kalau kasir ngetik pake spasi
         query = query.or(
-          `invoice_code.ilike.%${searchTerm}%,customers.name.ilike.%${searchTerm}%`,
+          `invoice_code.ilike."%${searchTerm}%",customer_name.ilike."%${searchTerm}%"`,
         );
       }
 
@@ -194,11 +184,11 @@ export default function RiwayatPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <User className="h-3 w-3 text-slate-400" />
-                          <span>{item.customers?.name || "Guest"}</span>
+                          <span>{item.customer_name || "Guest"}</span>
                         </div>
                         {authState.role === "owner" && (
                           <div className="text-xs text-slate-400 mt-0.5">
-                            {item.branches?.name}
+                            {item.branch_name}
                           </div>
                         )}
                       </td>
