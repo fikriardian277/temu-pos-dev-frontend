@@ -46,9 +46,9 @@ export default function RiwayatPage() {
           process_status,
           payment_method,
           cancellation_status, 
-          customers(name),
+          customers!inner(name),
           branches(name)
-        `
+        `,
         )
         .eq("business_id", authState.business_id)
         .order("created_at", { ascending: false })
@@ -61,9 +61,10 @@ export default function RiwayatPage() {
 
       // Filter Pencarian (Invoice atau Nama Customer)
       if (searchTerm) {
-        // Note: Search di Supabase agak tricky kalau join,
-        // kita cari by invoice dulu yang paling gampang di level ini
-        query = query.ilike("invoice_code", `%${searchTerm}%`);
+        // Pakai .or() untuk nyari di dua kolom berbeda sekaligus
+        query = query.or(
+          `invoice_code.ilike.%${searchTerm}%,customers.name.ilike.%${searchTerm}%`,
+        );
       }
 
       const { data, error } = await query;
@@ -116,10 +117,13 @@ export default function RiwayatPage() {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Cari No. Invoice..."
+            placeholder="Cari No. Invoice atau Nama..."
             className="pl-9 bg-white"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setPage(1); // <-- Tambahin ini biar otomatis balik ke hal 1
+            }}
           />
         </div>
       </div>
@@ -169,13 +173,13 @@ export default function RiwayatPage() {
                         <div className="flex flex-col">
                           <span className="font-medium text-slate-700">
                             {new Date(item.created_at).toLocaleDateString(
-                              "id-ID"
+                              "id-ID",
                             )}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {new Date(item.created_at).toLocaleTimeString(
                               "id-ID",
-                              { hour: "2-digit", minute: "2-digit" }
+                              { hour: "2-digit", minute: "2-digit" },
                             )}
                           </span>
                         </div>
