@@ -106,66 +106,71 @@ export default function PayrollRunPage() {
 
     try {
       const ws = workbook.Sheets[sheetName];
-      // Baca Data (Header Hunter Logic)
       const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
-      let headerRowIndex = -1;
-      let foundHeaders = false;
+      let idxNik = -1;
+      let idxAtt = -1;
+      let idxOt = -1;
+      let idxTotal = -1; // 👈 1. TAMBAHIN VARIABEL INI
+      let dataStartRow = -1;
 
-      // CARI BARIS HEADER (Attendance Count & Overtime Hours)
-      for (let i = 0; i < rawRows.length; i++) {
-        const rowStr = JSON.stringify(rawRows[i] || []).toUpperCase();
+      for (let i = 0; i < Math.min(rawRows.length, 10); i++) {
+        const row = rawRows[i] || [];
+        for (let j = 0; j < row.length; j++) {
+          const cellVal = String(row[j] || "")
+            .toUpperCase()
+            .trim();
 
-        if (
-          rowStr.includes("ATTENDANCE COUNT") &&
-          rowStr.includes("OVERTIME HOURS")
-        ) {
-          headerRowIndex = i;
-          foundHeaders = true;
-          break;
+          if (cellVal.includes("EMPLOYE ID")) idxNik = j;
+          if (cellVal.includes("ATTENDANCE HOURS")) {
+            idxAtt = j;
+            dataStartRow = i + 1;
+          }
+          if (cellVal.includes("OVERTIME HOURS")) idxOt = j;
+          // 👇 2. TAMBAHIN PENCARIAN INI 👇
+          if (cellVal.includes("TOTAL WORKING HOURS")) idxTotal = j;
         }
       }
 
-      if (!foundHeaders) {
+      // Validasi kalau kolomnya beneran gak ada
+      if (idxNik === -1 || idxAtt === -1) {
         setParsingStatus(
-          `❌ Gagal: Tidak ada tabel Summary di Sheet "${sheetName}". Coba Sheet lain.`
+          `❌ Gagal: Tidak menemukan kolom 'Employe ID' atau 'Total Working Days' di Sheet "${sheetName}".`,
         );
         return;
       }
 
-      // MAPPING INDEX KOLOM
-      const headers = rawRows[headerRowIndex];
-      const idxNik = headers.findIndex(
-        (h) => h && h.toString().toUpperCase().includes("EMPLOYE ID")
-      );
-      const idxAtt = headers.findIndex(
-        (h) => h && h.toString().toUpperCase().includes("ATTENDANCE COUNT")
-      );
-      const idxOt = headers.findIndex(
-        (h) => h && h.toString().toUpperCase().includes("OVERTIME HOURS")
-      );
-
-      if (idxNik === -1) {
-        setParsingStatus("❌ Gagal: Kolom 'Employe ID' tidak ditemukan.");
-        return;
-      }
-
-      // AMBIL DATA
+      // ==========================================
+      // AMBIL DATA KARYAWAN
+      // ==========================================
       let extracted = [];
-      for (let i = headerRowIndex + 1; i < rawRows.length; i++) {
+      // Looping dimulai dari baris tepat di bawah Header
+      for (let i = dataStartRow; i < rawRows.length; i++) {
         const row = rawRows[i];
-        if (!row || !row[idxNik]) continue;
+        if (!row) continue;
+
+        // Tangkep nilai di kolom ID
+        const empId = String(row[idxNik] || "").trim();
+
+        // 👇 FILTER ANTI-LEGEND 👇
+        // Skip kalau kosong, ATAU hurufnya kurang dari 5, ATAU gak ada tanda strip (-)
+        // Ini otomatis bakal nendang P6, P8, S, M, L, SK, DS dll.
+        if (!empId || empId.length < 5 || !empId.includes("-")) {
+          continue;
+        }
 
         extracted.push({
-          "Employe ID": row[idxNik],
-          "Attendance Count": idxAtt !== -1 ? row[idxAtt] : 0,
-          "Overtime Hours": idxOt !== -1 ? row[idxOt] : 0,
+          "Employe ID": empId,
+          "Attendance Hours": row[idxAtt] || 0,
+          "Overtime Hours": idxOt !== -1 ? row[idxOt] || 0 : 0,
+          // 👇 3. MASUKIN DATA TOTALNYA 👇
+          "Total Hours": idxTotal !== -1 ? row[idxTotal] || 0 : 0,
         });
       }
 
       setExcelData(extracted);
       setParsingStatus(
-        `✅ Sukses! ${extracted.length} data karyawan siap diproses dari ${sheetName}.`
+        `✅ Sukses! ${extracted.length} data karyawan siap diproses dari ${sheetName}.`,
       );
     } catch (error) {
       console.error(error);
@@ -306,8 +311,8 @@ export default function PayrollRunPage() {
                     parsingStatus.includes("Sukses")
                       ? "bg-green-100 text-green-800 border-green-300"
                       : parsingStatus.includes("Gagal")
-                      ? "bg-red-100 text-red-800 border-red-300"
-                      : "bg-slate-100"
+                        ? "bg-red-100 text-red-800 border-red-300"
+                        : "bg-slate-100"
                   }`}
                 >
                   {parsingStatus.includes("Sukses") ? (
@@ -326,16 +331,24 @@ export default function PayrollRunPage() {
                     <thead className="bg-slate-100 sticky top-0">
                       <tr>
                         <th className="p-2">ID</th>
-                        <th className="p-2">Kehadiran</th>
-                        <th className="p-2">Lembur</th>
+                        <th className="p-2">Kehadiran (Jam)</th>
+                        <th className="p-2">Lembur (Jam)</th>
+                        <th className="p-2 font-bold text-blue-700">
+                          Total (Jam)
+                        </th>{" "}
+                        {/* 👈 Header Baru */}
                       </tr>
                     </thead>
                     <tbody>
                       {excelData.map((row, idx) => (
                         <tr key={idx} className="border-t">
                           <td className="p-2 font-mono">{row["Employe ID"]}</td>
-                          <td className="p-2">{row["Attendance Count"]}</td>
+                          <td className="p-2">{row["Attendance Hours"]}</td>
                           <td className="p-2">{row["Overtime Hours"]}</td>
+                          {/* 👇 Data Baru (Biar lebih tebel dikit teksnya) 👇 */}
+                          <td className="p-2 font-bold text-blue-700">
+                            {row["Total Hours"]}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

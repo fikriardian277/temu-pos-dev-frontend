@@ -62,6 +62,10 @@ export default function PayrollDetailPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [isEditingSlip, setIsEditingSlip] = useState(false);
+  const [newDeduction, setNewDeduction] = useState({ name: "", amount: "" });
+  const [isSavingDeduction, setIsSavingDeduction] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, [id]);
@@ -227,6 +231,64 @@ export default function PayrollDetailPage() {
       </div>
     );
 
+  const handleAddDeduction = async () => {
+    if (!newDeduction.name || !newDeduction.amount)
+      return toast.error("Isi nama dan nominal potongan!");
+
+    setIsSavingDeduction(true);
+    try {
+      // 1. Ambil array details yang lama
+      const currentDetails = selectedSlip.details || [];
+      const deductionAmount = parseFloat(newDeduction.amount);
+
+      // 2. Tambahin item baru (tipe: deduction)
+      const updatedDetails = [
+        ...currentDetails,
+        {
+          name: newDeduction.name,
+          type: "deduction",
+          qty: 1,
+          rate: deductionAmount,
+          amount: deductionAmount, // Tetap positif di JSON, ntar diitung ngurangin
+        },
+      ];
+
+      // 3. Hitung ulang THP (Total Gaji - Potongan Baru)
+      const newTHP = selectedSlip.take_home_pay - deductionAmount;
+
+      // 4. Update ke Database (Tabel payroll_slips)
+      const { error: slipErr } = await supabase
+        .schema("hr")
+        .from("payroll_slips")
+        .update({ details: updatedDetails, take_home_pay: newTHP })
+        .eq("id", selectedSlip.id);
+
+      if (slipErr) throw slipErr;
+
+      // 5. Update Total Keseluruhan di payroll_runs
+      const newRunTotal = run.total_amount - deductionAmount;
+      const { error: runErr } = await supabase
+        .schema("hr")
+        .from("payroll_runs")
+        .update({ total_amount: newRunTotal })
+        .eq("id", id);
+
+      if (runErr) throw runErr;
+
+      toast.success("Potongan berhasil ditambahkan!");
+
+      // Refresh Data & Tutup Form
+      setNewDeduction({ name: "", amount: "" });
+      setIsEditingSlip(false);
+      setSelectedSlip(null); // Tutup modal biar ngerender ulang data fresh
+      fetchData(); // Panggil ulang data dari DB
+    } catch (e) {
+      toast.error("Gagal simpan potongan: " + e.message);
+    } finally {
+      setIsSavingDeduction(false);
+    }
+  };
+
   return (
     <div className="p-4 w-full space-y-6 pb-20">
       {/* HEADER PAGE */}
@@ -390,7 +452,9 @@ export default function PayrollDetailPage() {
               Rincian Gaji: {selectedSlip?.employee_name}
             </DialogTitle>
           </DialogHeader>
-          <div className="bg-slate-50 p-4 rounded border text-sm space-y-2">
+
+          {/* LIST KOMPONEN GAJI */}
+          <div className="bg-slate-50 p-4 rounded border text-sm space-y-2 max-h-[60vh] overflow-y-auto">
             {selectedSlip?.details?.map((item, idx) => (
               <div
                 key={idx}
@@ -398,19 +462,74 @@ export default function PayrollDetailPage() {
               >
                 <span>{item.name}</span>
                 <span
-                  className={item.type === "deduction" ? "text-red-600" : ""}
+                  className={
+                    item.type === "deduction" ? "text-red-600 font-bold" : ""
+                  }
                 >
+                  {item.type === "deduction" ? "-" : ""}{" "}
                   {formatRupiah(item.amount)}
                 </span>
               </div>
             ))}
-            <div className="flex justify-between font-bold pt-2 border-t border-slate-300">
-              <span>Total</span>
+            <div className="flex justify-between font-bold text-lg pt-2 border-t-2 border-slate-300">
+              <span>Total THP</span>
               <span>{formatRupiah(selectedSlip?.take_home_pay)}</span>
             </div>
           </div>
-          <DialogFooter>
-            {/* TOMBOL PRINT DI MODAL */}
+
+          {/* FORM TAMBAH POTONGAN (Muncul pas Edit) */}
+          {isEditingSlip && run?.status === "draft" && (
+            <div className="bg-red-50 p-3 rounded border border-red-200 space-y-3 mt-2 animate-in fade-in">
+              <h4 className="font-bold text-red-700 text-sm">
+                Tambah Potongan / Kasbon
+              </h4>
+              <Input
+                placeholder="Nama Potongan (Misal: Kasbon 10 Feb)"
+                value={newDeduction.name}
+                onChange={(e) =>
+                  setNewDeduction({ ...newDeduction, name: e.target.value })
+                }
+              />
+              <Input
+                type="number"
+                placeholder="Nominal (Misal: 50000)"
+                value={newDeduction.amount}
+                onChange={(e) =>
+                  setNewDeduction({ ...newDeduction, amount: e.target.value })
+                }
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setIsEditingSlip(false)}
+                >
+                  Batal
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleAddDeduction}
+                  disabled={isSavingDeduction}
+                >
+                  {isSavingDeduction ? "Menyimpan..." : "Simpan Potongan"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-4 flex gap-2">
+            {/* TOMBOL EDIT KASBON (Cuma muncul kalau masih DRAFT) */}
+            {!isEditingSlip && run?.status === "draft" && (
+              <Button
+                variant="destructive"
+                className="mr-auto bg-red-100 text-red-700 hover:bg-red-200"
+                onClick={() => setIsEditingSlip(true)}
+              >
+                + Tambah Potongan
+              </Button>
+            )}
+
             <Button
               variant="outline"
               onClick={() => executePrint([selectedSlip])}

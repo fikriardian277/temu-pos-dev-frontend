@@ -177,7 +177,16 @@ export default function PayrollSlipTemplate({
 
       {slips.map((slip, index) => {
         const details = slip.details || [];
-        const earnings = details.filter((d) => d.type !== "deduction");
+        const earnings = details
+          .filter((d) => d.type !== "deduction")
+          .sort((a, b) => {
+            // Aturan 1: Yang tipenya "fixed" (Basic Salary) SELALU DI ATAS
+            if (a.type === "fixed" && b.type !== "fixed") return -1;
+            if (a.type !== "fixed" && b.type === "fixed") return 1;
+
+            // Aturan 2: Kalau sama-sama variable (misal Gaji Harian vs Lembur), urutkan sesuai Abjad (A-Z)
+            return a.name.localeCompare(b.name);
+          });
         const deductions = details.filter((d) => d.type === "deduction");
         const totalEarnings = earnings.reduce(
           (sum, item) => sum + (Number(item.amount) || 0),
@@ -217,7 +226,7 @@ export default function PayrollSlipTemplate({
                     </div>
                   </td>
                   <td align="right" valign="top">
-                    <span style={styles.pill}>SLIP GAJI</span>
+                    <span style={styles.pill}>PAYSLIP</span>
                     <div
                       style={{
                         fontSize: "12px",
@@ -226,7 +235,7 @@ export default function PayrollSlipTemplate({
                         color: "#475569",
                       }}
                     >
-                      Periode: {formatDate(runData?.period_start)} -{" "}
+                      Period: {formatDate(runData?.period_start)} -{" "}
                       {formatDate(runData?.period_end)}
                       <br />
                       ID: #{slip.id}
@@ -241,12 +250,12 @@ export default function PayrollSlipTemplate({
               <tbody>
                 <tr>
                   <td width="48%" style={styles.card}>
-                    <span style={styles.cardHeader}>KARYAWAN</span>
+                    <span style={styles.cardHeader}>EMPLOYEE</span>
                     <table width="100%" style={{ fontSize: "13px" }}>
                       <tbody>
                         <tr>
                           <td style={{ color: "#64748b", padding: "2px 0" }}>
-                            Nama
+                            Name
                           </td>
                           <td style={{ fontWeight: "bold" }}>
                             : {slip.employee_name}
@@ -254,7 +263,7 @@ export default function PayrollSlipTemplate({
                         </tr>
                         <tr>
                           <td style={{ color: "#64748b", padding: "2px 0" }}>
-                            NIK
+                            Employee ID
                           </td>
                           <td style={{ fontWeight: "bold" }}>
                             : {slip.nik || "-"}
@@ -262,7 +271,7 @@ export default function PayrollSlipTemplate({
                         </tr>
                         <tr>
                           <td style={{ color: "#64748b", padding: "2px 0" }}>
-                            Jabatan
+                            Position
                           </td>
                           <td style={{ fontWeight: "bold" }}>
                             : {slip.position || "-"}
@@ -273,7 +282,7 @@ export default function PayrollSlipTemplate({
                   </td>
                   <td width="4%"></td>
                   <td width="48%" style={styles.cardBlue}>
-                    <span style={styles.cardHeader}>PENEMPATAN</span>
+                    <span style={styles.cardHeader}>PLACEMENT</span>
                     <div style={{ fontWeight: "bold", fontSize: "14px" }}>
                       {slip.branch_name || "Pusat"}
                     </div>
@@ -284,7 +293,7 @@ export default function PayrollSlipTemplate({
                         marginTop: "5px",
                       }}
                     >
-                      Join: {joinDate}
+                      Join Date: {joinDate}
                     </div>
                   </td>
                 </tr>
@@ -299,9 +308,9 @@ export default function PayrollSlipTemplate({
                   <th style={styles.th} width="50">
                     NO
                   </th>
-                  <th style={styles.th}>PENDAPATAN</th>
+                  <th style={styles.th}>EARNINGS</th>
                   <th style={{ ...styles.th, textAlign: "right" }} width="150">
-                    JUMLAH
+                    AMOUNT
                   </th>
                 </tr>
               </thead>
@@ -313,12 +322,6 @@ export default function PayrollSlipTemplate({
                     </td>
                     <td style={styles.td}>
                       <b>{item.name}</b>
-                      {item.type === "variable" && (
-                        <div style={{ fontSize: "11px", color: "#64748b" }}>
-                          {item.qty} x{" "}
-                          {Number(item.rate).toLocaleString("id-ID")}
-                        </div>
-                      )}
                     </td>
                     <td
                       style={{
@@ -333,7 +336,7 @@ export default function PayrollSlipTemplate({
                 ))}
                 <tr style={styles.totalRow}>
                   <td colSpan="2" style={{ ...styles.td, textAlign: "right" }}>
-                    TOTAL PENDAPATAN
+                    TOTAL EARNINGS
                   </td>
                   <td
                     style={{
@@ -355,9 +358,9 @@ export default function PayrollSlipTemplate({
                   <th style={styles.th} width="50">
                     NO
                   </th>
-                  <th style={styles.th}>POTONGAN</th>
+                  <th style={styles.th}>DEDUCTIONS</th>
                   <th style={{ ...styles.th, textAlign: "right" }} width="150">
-                    JUMLAH
+                    AMOUNT
                   </th>
                 </tr>
               </thead>
@@ -394,13 +397,13 @@ export default function PayrollSlipTemplate({
                         fontStyle: "italic",
                       }}
                     >
-                      Tidak ada potongan
+                      No Deductions
                     </td>
                   </tr>
                 )}
                 <tr style={styles.totalRow}>
                   <td colSpan="2" style={{ ...styles.td, textAlign: "right" }}>
-                    TOTAL POTONGAN
+                    TOTAL DEDUCTIONS
                   </td>
                   <td
                     style={{
@@ -420,26 +423,14 @@ export default function PayrollSlipTemplate({
             <table width="100%" style={{ marginTop: "10px" }}>
               <tbody>
                 <tr>
-                  <td width="55%" valign="top" style={{ paddingRight: "10px" }}>
-                    <div style={styles.bankBox}>
-                      <div
-                        style={{
-                          fontWeight: "bold",
-                          fontSize: "11px",
-                          color: "#64748b",
-                          marginBottom: "5px",
-                        }}
-                      >
-                        INSTRUKSI TRANSFER
-                      </div>
-                      <div>
-                        Bank: <b>{slip.bank_name || "..."}</b>
-                      </div>
-                      <div>
-                        Rek: <b>{slip.account_number || "-"}</b>
-                      </div>
-                    </div>
-                  </td>
+                  {/* KIRI KOSONG: Biar jadi jarak (spacer) aja */}
+                  <td
+                    width="55%"
+                    valign="top"
+                    style={{ paddingRight: "10px" }}
+                  ></td>
+
+                  {/* KANAN: TAKE HOME PAY TETEP STAY */}
                   <td width="45%" valign="top">
                     <div style={styles.totalBox}>
                       <div
