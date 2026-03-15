@@ -53,10 +53,15 @@ export function AuthProvider({ children }) {
       setSettings(settingsData || null);
     } catch (error) {
       console.error("Gagal mengambil data profil/settings:", error);
+
+      // 👇 INI DIA PENYELAMATNYA! 👇
+      // Kalau gagal narik Role, JANGAN dibiarin null.
+      // Paksa Logout biar token kasir yang korup di HP ke-reset otomatis!
+      supabase.auth.signOut();
+      setSession(null);
       setProfile(null);
       setSettings(null);
     }
-    // GAK PERLU MASUKIN profile & settings ke dependency biar gak infinity loop!
   }, []);
 
   // useEffect UTAMA: Jalankan 1x saat aplikasi baru dibuka
