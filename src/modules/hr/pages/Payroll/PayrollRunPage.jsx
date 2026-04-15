@@ -329,6 +329,7 @@ export default function PayrollRunPage() {
               )}
 
               {/* PREVIEW TABLE */}
+              {/* PREVIEW TABLE */}
               {excelData.length > 0 && (
                 <div className="max-h-[200px] overflow-y-auto border rounded text-xs">
                   <table className="w-full text-left">
@@ -337,10 +338,13 @@ export default function PayrollRunPage() {
                         <th className="p-2">ID</th>
                         <th className="p-2">Kehadiran (Jam)</th>
                         <th className="p-2">Lembur (Jam)</th>
+
+                        {/* 👇 Tambahin Header Baru Di Sini 👇 */}
+                        <th className="p-2">Lembur / Jam</th>
+
                         <th className="p-2 font-bold text-blue-700">
                           Total (Jam)
-                        </th>{" "}
-                        {/* 👈 Header Baru */}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -349,7 +353,10 @@ export default function PayrollRunPage() {
                           <td className="p-2 font-mono">{row["Employe ID"]}</td>
                           <td className="p-2">{row["Attendance Hours"]}</td>
                           <td className="p-2">{row["Overtime Hours"]}</td>
-                          {/* 👇 Data Baru (Biar lebih tebel dikit teksnya) 👇 */}
+
+                          {/* 👇 Tambahin Data Baru Di Sini (Sesuai key JSON) 👇 */}
+                          <td className="p-2">{row["Overtime Per Hours"]}</td>
+
                           <td className="p-2 font-bold text-blue-700">
                             {row["Total Hours"]}
                           </td>
