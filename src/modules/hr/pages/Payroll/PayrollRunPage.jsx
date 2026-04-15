@@ -120,6 +120,7 @@ export default function PayrollRunPage() {
         for (let j = 0; j < row.length; j++) {
           const cellVal = String(row[j] || "")
             .toUpperCase()
+            .replace(/\s+/g, " ") // 👈 TAMBAHIN INI: Ubah semua enter/tab/spasi ganda jadi 1 spasi biasa
             .trim();
 
           if (cellVal.includes("EMPLOYE ID")) idxNik = j;
@@ -128,9 +129,8 @@ export default function PayrollRunPage() {
             dataStartRow = i + 1;
           }
           if (cellVal.includes("OVERTIME HOURS")) idxOt = j;
-          // 👇 2. TAMBAHIN PENCARIAN INI 👇
           if (cellVal.includes("TOTAL WORKING HOURS")) idxTotal = j;
-          if (cellVal.includes("OVERTIME PER HOURS")) idxOtPerHours = j;
+          if (cellVal.includes("OVERTIME PER HOURS")) idxOtPerHours = j; // 👈 Pasti langsung dapet!
         }
       }
 
