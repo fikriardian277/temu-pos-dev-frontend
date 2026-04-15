@@ -111,7 +111,8 @@ export default function PayrollRunPage() {
       let idxNik = -1;
       let idxAtt = -1;
       let idxOt = -1;
-      let idxTotal = -1; // 👈 1. TAMBAHIN VARIABEL INI
+      let idxTotal = -1;
+      let idxOtPerHours = -1; // 👈 1. TAMBAHIN VARIABEL INI
       let dataStartRow = -1;
 
       for (let i = 0; i < Math.min(rawRows.length, 10); i++) {
@@ -129,6 +130,7 @@ export default function PayrollRunPage() {
           if (cellVal.includes("OVERTIME HOURS")) idxOt = j;
           // 👇 2. TAMBAHIN PENCARIAN INI 👇
           if (cellVal.includes("TOTAL WORKING HOURS")) idxTotal = j;
+          if (cellVal.includes("OVERTIME PER HOURS")) idxOtPerHours = j;
         }
       }
 
@@ -165,6 +167,8 @@ export default function PayrollRunPage() {
           "Overtime Hours": idxOt !== -1 ? row[idxOt] || 0 : 0,
           // 👇 3. MASUKIN DATA TOTALNYA 👇
           "Total Hours": idxTotal !== -1 ? row[idxTotal] || 0 : 0,
+          "Overtime Per Hours":
+            idxOtPerHours !== -1 ? row[idxOtPerHours] || 0 : 0,
         });
       }
 
