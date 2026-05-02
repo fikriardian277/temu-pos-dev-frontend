@@ -23,6 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { Button } from "@/components/ui/Button";
+import { Layers } from "lucide-react";
 
 // Shared Components
 import DateRangeFilter from "../components/DateRangeFilter";
@@ -127,6 +129,93 @@ export default function LaporanPenjualan() {
     { label: "Net Sales", key: "net_amount" },
   ];
 
+  // --- STATE KHUSUS REKAP ITEM (CSV) ---
+  const [isExportingItem, setIsExportingItem] = useState(false);
+
+  // --- FUNCTION DOWNLOAD CSV REKAP ITEM ---
+  const handleExportRekapItem = async () => {
+    setIsExportingItem(true);
+    try {
+      const { data, error } = await supabase.rpc("get_rekap_layanan_csv", {
+        p_business_id: authState.business_id,
+        p_start_date: startDate,
+        p_end_date: endDate,
+        p_branch_id: selectedBranch === "all" ? null : parseInt(selectedBranch),
+      });
+
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        toast.error("Tidak ada data transaksi pada periode ini.");
+        return;
+      }
+
+      // --- HEADER SUPER DETAIL ---
+      const headers = [
+        "Tanggal",
+        "No Invoice",
+        "Cabang",
+        "ID Pelanggan",
+        "Kategori",
+        "Layanan",
+        "Paket",
+        "Qty",
+        "Satuan",
+        "Harga/Unit",
+        "Subtotal Item",
+        "Status Bayar",
+        "Status Proses",
+        "Metode Bayar",
+        "Status Order",
+        "Grand Total Nota",
+      ];
+
+      const csvContent = [
+        headers.join(";"),
+        ...data.map((row) =>
+          [
+            `"${row.tanggal}"`,
+            `"${row.no_invoice}"`,
+            `"${row.nama_cabang}"`,
+            `"${row.id_pelanggan}"`,
+            `"${row.kategori}"`,
+            `"${row.layanan}"`,
+            `"${row.paket}"`,
+            row.qty,
+            `"${row.satuan}"`,
+            row.harga_per_unit,
+            row.subtotal_item,
+            `"${row.status_bayar}"`,
+            `"${row.status_proses}"`,
+            `"${row.metode_bayar}"`,
+            `"${row.status_order}"`,
+            row.total_nota_akhir,
+          ].join(";"),
+        ),
+      ].join("\n");
+
+      // Trigger Download dengan BOM (Agar Excel Indo Langsung Rapi)
+      const blob = new Blob(["\uFEFF" + csvContent], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute(
+        "download",
+        `Laporan_Detail_Transaksi_Lengkap_${startDate}_${endDate}.csv`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Berhasil download Laporan Detail Lengkap!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Gagal export CSV Detail.");
+    } finally {
+      setIsExportingItem(false);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* HEADER & FILTER */}
@@ -171,6 +260,20 @@ export default function LaporanPenjualan() {
             filename={`Sales_Report_${startDate}_${endDate}.csv`}
             headers={csvHeaders}
           />
+
+          <Button
+            variant="outline"
+            className="border-green-600 text-green-600 hover:bg-green-50"
+            onClick={handleExportRekapItem}
+            disabled={isExportingItem}
+          >
+            {isExportingItem ? (
+              <Loader2 className="animate-spin w-4 h-4 mr-2" />
+            ) : (
+              <Layers className="w-4 h-4 mr-2" />
+            )}
+            Export Rekap Item
+          </Button>
         </div>
       </div>
 
