@@ -286,15 +286,6 @@ export default function PayrollSlipTemplate({
                     <div style={{ fontWeight: "bold", fontSize: "14px" }}>
                       {slip.branch_name || "Pusat"}
                     </div>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#64748b",
-                        marginTop: "5px",
-                      }}
-                    >
-                      Join Date: {joinDate}
-                    </div>
                   </td>
                 </tr>
               </tbody>
